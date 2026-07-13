@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard de Engenharia — AGRICEF</title>
+<link rel="stylesheet" href="css/styles.css" />
+
+<!-- Chart.js (o boxplot de lead time é desenhado com barras flutuantes nativas do Chart.js, sem plugin extra) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<!-- Gantt (página de capacidade produtiva) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@1.2.2/dist/frappe-gantt.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/frappe-gantt@1.2.2/dist/frappe-gantt.umd.min.js"></script>
+<!-- Word cloud -->
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-title">
+    <h1>Dashboard de Engenharia</h1>
+    <span class="subtitle">AGRICEF — réplica do painel Power BI, alimentada pela API do Jira</span>
+  </div>
+  <div class="topbar-actions">
+    <span id="sourceBadge" class="badge">carregando…</span>
+    <span id="lastUpdated" class="last-updated"></span>
+    <button id="refreshBtn" class="btn">Atualizar dados</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="visao-geral">Visão Geral</button>
+  <button class="tab-btn" data-tab="capacidade">Capacidade Produtiva</button>
+  <button class="tab-btn" data-tab="melhorias">Qualidade &amp; Melhorias</button>
+</nav>
+
+<main>
+  <!-- ===================== PÁGINA 1 — VISÃO GERAL ===================== -->
+  <section id="tab-visao-geral" class="tab-panel active">
+
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Status de Entregas / Período</h2>
+        <canvas id="chartStatusEntrega"></canvas>
+      </div>
+      <div class="card">
+        <h2>Origem do Tempo Gasto</h2>
+        <canvas id="chartOrigemTempo"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Tarefas Concluídas por Mês</h2>
+        <canvas id="chartConcluidasPorMes"></canvas>
+      </div>
+      <div class="card">
+        <h2>Tarefas Concluídas por Pessoa (mês vigente)</h2>
+        <canvas id="chartConcluidasPorPessoa"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Estimativa x Tempo Gasto (por mês)</h2>
+        <canvas id="chartEstimativaXGasto"></canvas>
+      </div>
+      <div class="card">
+        <h2>Tempo Gasto por Tipo de Tarefa</h2>
+        <canvas id="chartTempoPorTipo"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Distribuição do Lead Time (dias) por Tipo de Tarefa</h2>
+        <canvas id="chartLeadTimeBoxplot"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Criadas x Entregues (No Prazo / Fora do Prazo / Pendente)</h2>
+        <canvas id="chartComparativo"></canvas>
+      </div>
+      <div class="card">
+        <h2>Tarefas Criadas x Iniciadas por Mês</h2>
+        <canvas id="chartCriadasXIniciadas"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>WIP (Work in Progress) por Mês</h2>
+        <canvas id="chartWip"></canvas>
+      </div>
+      <div class="card">
+        <h2>Número de Tarefas por Relator</h2>
+        <canvas id="chartPorRelator"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Nuvem de Palavras — Resumos das Tarefas</h2>
+        <canvas id="chartWordCloud" width="900" height="360"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PÁGINA 2 — CAPACIDADE PRODUTIVA ===================== -->
+  <section id="tab-capacidade" class="tab-panel">
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Demanda x Capacidade Efetiva x Alocado — AEM (Mecânica)</h2>
+        <canvas id="chartCapAEM"></canvas>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Demanda x Capacidade Efetiva x Alocado — AEE (Eletroeletrônica)</h2>
+        <canvas id="chartCapAEE"></canvas>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Demanda x Capacidade Efetiva x Alocado — AVL (Validação)</h2>
+        <canvas id="chartCapAVL"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Cronograma de Projetos — AEM</h2>
+        <div id="ganttAEM" class="gantt-container"></div>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Cronograma de Projetos — AEE</h2>
+        <div id="ganttAEE" class="gantt-container"></div>
+      </div>
+    </div>
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Cronograma de Projetos — AVL</h2>
+        <div id="ganttAVL" class="gantt-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PÁGINA 3 — QUALIDADE & MELHORIAS (novo) ===================== -->
+  <section id="tab-melhorias" class="tab-panel">
+    <p class="section-note">
+      Indicadores novos, propostos além da réplica do painel original — ver
+      <code>_analise_dashboard/ESPECIFICACAO_DASHBOARD.md</code> para o contexto completo de cada um.
+    </p>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Qualidade do Dado de Tempo Gasto</h2>
+        <canvas id="chartDataQualityTempo"></canvas>
+      </div>
+      <div class="card">
+        <h2>Qualidade da Classificação de Tipo de Tarefa</h2>
+        <canvas id="chartDataQualityTipo"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Cycle Time Médio por Status (horas)</h2>
+        <canvas id="chartCycleTime"></canvas>
+      </div>
+      <div class="card">
+        <h2>Throughput Semanal (concluídas) + Forecast</h2>
+        <canvas id="chartThroughput"></canvas>
+      </div>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <h2>Estabilidade de Planejamento por Responsável (nº de remarcações)</h2>
+        <canvas id="chartEstabilidade"></canvas>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="js/api.js"></script>
+<script type="module" src="js/charts.js"></script>
+<script type="module" src="js/gantt.js"></script>
+<script type="module" src="js/wordcloud.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
