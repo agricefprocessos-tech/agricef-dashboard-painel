@@ -10,8 +10,8 @@ export function renderWordCloud(canvasId, words) {
     list,
     gridSize: 8,
     weightFactor: (size) => 6 + size * 3,
-    fontFamily: "Segoe UI, sans-serif",
-    color: () => ["#2f6fed", "#7a5af8", "#06aed4", "#12b76a", "#f79009"][Math.floor(Math.random() * 5)],
+    fontFamily: "Barlow Condensed, sans-serif",
+    color: () => ["#f0b429", "#38bdf8", "#4ade80", "#a78bfa", "#fb923c", "#67e8f9"][Math.floor(Math.random() * 6)],
     backgroundColor: "transparent",
     rotateRatio: 0.2,
   });

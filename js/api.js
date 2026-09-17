@@ -39,14 +39,25 @@ function jsonp(action) {
   });
 }
 
+// O Web App do Apps Script devolve esporadicamente uma página de erro do Google
+// em vez da resposta (visto na prática: um 404 transitório entre duas chamadas
+// idênticas). Uma segunda tentativa resolve, e sem ela o painel fica vazio.
+async function withRetry(action) {
+  try {
+    return await jsonp(action);
+  } catch {
+    return jsonp(action);
+  }
+}
+
 export async function fetchStatus() {
-  return jsonp("status");
+  return withRetry("status");
 }
 
 export async function fetchDashboard() {
-  return jsonp("dashboard");
+  return withRetry("dashboard");
 }
 
 export async function refreshDashboard() {
-  return jsonp("refresh");
+  return withRetry("refresh");
 }

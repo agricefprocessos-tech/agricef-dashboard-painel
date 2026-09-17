@@ -5,12 +5,12 @@ export function renderGantt(containerId, projetos) {
   container.innerHTML = "";
 
   if (!projetos || projetos.length === 0) {
-    container.innerHTML = '<p style="color:#98a2b3;font-size:13px;">Sem projetos cadastrados.</p>';
+    container.innerHTML = '<p class="empty">Sem projetos cadastrados.</p>';
     return;
   }
 
   if (typeof Gantt === "undefined") {
-    container.innerHTML = '<p style="color:#98a2b3;font-size:13px;">Biblioteca de Gantt não carregou (verifique a conexão com o CDN).</p>';
+    container.innerHTML = '<p class="empty">Biblioteca de Gantt não carregou (verifique a conexão com o CDN).</p>';
     return;
   }
 
@@ -26,6 +26,6 @@ export function renderGantt(containerId, projetos) {
     // eslint-disable-next-line no-undef
     new Gantt(`#${containerId}`, tasks, { view_mode: "Week", language: "pt" });
   } catch (err) {
-    container.innerHTML = `<p style="color:#f04438;font-size:13px;">Erro ao renderizar Gantt: ${err.message}</p>`;
+    container.innerHTML = `<p class="empty" style="color:#f87171">Erro ao renderizar Gantt: ${err.message}</p>`;
   }
 }

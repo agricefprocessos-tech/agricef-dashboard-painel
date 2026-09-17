@@ -1,9 +1,11 @@
 <!doctype html>
-<html lang="pt-BR">
+<!-- data-theme="dark" ativa o tema escuro nativo do frappe-gantt (v1.x) -->
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard de Engenharia — AGRICEF</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css" />
 
 <!-- Chart.js (o boxplot de lead time é desenhado com barras flutuantes nativas do Chart.js, sem plugin extra) -->
@@ -15,22 +17,32 @@
 <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 </head>
 <body>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">CARREGANDO DADOS</div>
+  <div class="loading-sub">consultando o Jira…</div>
+</div>
+
 <header class="topbar">
-  <div class="topbar-title">
-    <h1>Dashboard de Engenharia</h1>
-    <span class="subtitle">AGRICEF — réplica do painel Power BI, alimentada pela API do Jira</span>
+  <div class="logo">
+    <img src="img/agricef-logo.png" alt="AGRICEF" />
+    <div class="logo-text">
+      <h1>Dashboard de Engenharia</h1>
+      <p>AEM · AEE · AVL — dados ao vivo do Jira</p>
+    </div>
   </div>
-  <div class="topbar-actions">
-    <span id="sourceBadge" class="badge">carregando…</span>
+  <div class="header-right">
+    <span id="sourceBadge" class="live-badge"><span class="live-dot"></span>carregando…</span>
     <span id="lastUpdated" class="last-updated"></span>
-    <button id="refreshBtn" class="btn">Atualizar dados</button>
+    <button id="refreshBtn" class="refresh-btn" title="Atualizar dados">⟳</button>
   </div>
 </header>
 
-<nav class="tabs">
-  <button class="tab-btn active" data-tab="visao-geral">Visão Geral</button>
-  <button class="tab-btn" data-tab="capacidade">Capacidade Produtiva</button>
-  <button class="tab-btn" data-tab="melhorias">Qualidade &amp; Melhorias</button>
+<nav class="page-nav">
+  <button class="page-tab active" data-tab="visao-geral">📊 Visão Geral</button>
+  <button class="page-tab" data-tab="capacidade">🏭 Capacidade Produtiva</button>
+  <button class="page-tab" data-tab="melhorias">✅ Qualidade &amp; Melhorias</button>
 </nav>
 
 <main>
@@ -39,150 +51,212 @@
 
     <div class="kpi-row" id="kpiRow"></div>
 
-    <div class="grid grid-2">
+    <div class="subpag-nav">
+      <button data-dir="-1" title="Anterior">‹</button>
+      <span class="subpag-ind"></span>
+      <button data-dir="1" title="Próxima">›</button>
+    </div>
+
+    <div class="page-grid active cols-2 rows-2">
       <div class="card">
-        <h2>Status de Entregas / Período</h2>
-        <canvas id="chartStatusEntrega"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🎯 Status de Entregas / Período</div>
+          <span class="card-badge">no prazo x fora do prazo</span>
+        </div>
+        <div class="card-body"><canvas id="chartStatusEntrega"></canvas></div>
       </div>
       <div class="card">
-        <h2>Origem do Tempo Gasto</h2>
-        <canvas id="chartOrigemTempo"></canvas>
+        <div class="card-hd">
+          <div class="card-title">⏱️ Origem do Tempo Gasto</div>
+          <span class="card-badge">registrado x calculado</span>
+        </div>
+        <div class="card-body"><canvas id="chartOrigemTempo"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">📅 Tarefas Concluídas por Mês</div>
+          <span class="card-badge">série histórica</span>
+        </div>
+        <div class="card-body"><canvas id="chartConcluidasPorMes"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">🏆 Concluídas por Pessoa</div>
+          <span class="card-badge">mês vigente</span>
+        </div>
+        <div class="card-body"><canvas id="chartConcluidasPorPessoa"></canvas></div>
       </div>
     </div>
 
-    <div class="grid grid-2">
+    <div class="page-grid cols-2 rows-2">
       <div class="card">
-        <h2>Tarefas Concluídas por Mês</h2>
-        <canvas id="chartConcluidasPorMes"></canvas>
+        <div class="card-hd">
+          <div class="card-title">📈 Estimativa x Tempo Gasto</div>
+          <span class="card-badge">horas por mês</span>
+        </div>
+        <div class="card-body"><canvas id="chartEstimativaXGasto"></canvas></div>
       </div>
       <div class="card">
-        <h2>Tarefas Concluídas por Pessoa (mês vigente)</h2>
-        <canvas id="chartConcluidasPorPessoa"></canvas>
-      </div>
-    </div>
-
-    <div class="grid grid-2">
-      <div class="card">
-        <h2>Estimativa x Tempo Gasto (por mês)</h2>
-        <canvas id="chartEstimativaXGasto"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🔧 Tempo Gasto por Tipo de Tarefa</div>
+          <span class="card-badge">horas totais</span>
+        </div>
+        <div class="card-body"><canvas id="chartTempoPorTipo"></canvas></div>
       </div>
       <div class="card">
-        <h2>Tempo Gasto por Tipo de Tarefa</h2>
-        <canvas id="chartTempoPorTipo"></canvas>
-      </div>
-    </div>
-
-    <div class="grid grid-1">
-      <div class="card">
-        <h2>Distribuição do Lead Time (dias) por Tipo de Tarefa</h2>
-        <canvas id="chartLeadTimeBoxplot"></canvas>
-      </div>
-    </div>
-
-    <div class="grid grid-2">
-      <div class="card">
-        <h2>Criadas x Entregues (No Prazo / Fora do Prazo / Pendente)</h2>
-        <canvas id="chartComparativo"></canvas>
+        <div class="card-hd">
+          <div class="card-title">⚖️ Criadas x Entregues</div>
+          <span class="card-badge">no prazo / fora / pendente</span>
+        </div>
+        <div class="card-body"><canvas id="chartComparativo"></canvas></div>
       </div>
       <div class="card">
-        <h2>Tarefas Criadas x Iniciadas por Mês</h2>
-        <canvas id="chartCriadasXIniciadas"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🚀 Criadas x Iniciadas por Mês</div>
+          <span class="card-badge">entrada x início</span>
+        </div>
+        <div class="card-body"><canvas id="chartCriadasXIniciadas"></canvas></div>
       </div>
     </div>
 
-    <div class="grid grid-2">
+    <div class="page-grid cols-2 rows-2">
       <div class="card">
-        <h2>WIP (Work in Progress) por Mês</h2>
-        <canvas id="chartWip"></canvas>
+        <div class="card-hd">
+          <div class="card-title">📦 Lead Time por Tipo de Tarefa</div>
+          <span class="card-badge">dias · min / Q1 / mediana / Q3 / max</span>
+        </div>
+        <div class="card-body"><canvas id="chartLeadTimeBoxplot"></canvas></div>
       </div>
       <div class="card">
-        <h2>Número de Tarefas por Relator</h2>
-        <canvas id="chartPorRelator"></canvas>
+        <div class="card-hd">
+          <div class="card-title">☁️ Nuvem de Palavras</div>
+          <span class="card-badge">resumos das tarefas</span>
+        </div>
+        <div class="card-body"><canvas id="chartWordCloud" width="900" height="360"></canvas></div>
       </div>
-    </div>
-
-    <div class="grid grid-1">
       <div class="card">
-        <h2>Nuvem de Palavras — Resumos das Tarefas</h2>
-        <canvas id="chartWordCloud" width="900" height="360"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🔄 WIP por Mês</div>
+          <span class="card-badge">work in progress</span>
+        </div>
+        <div class="card-body"><canvas id="chartWip"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">✍️ Tarefas por Relator</div>
+          <span class="card-badge">quem abre demanda</span>
+        </div>
+        <div class="card-body"><canvas id="chartPorRelator"></canvas></div>
       </div>
     </div>
   </section>
 
   <!-- ===================== PÁGINA 2 — CAPACIDADE PRODUTIVA ===================== -->
   <section id="tab-capacidade" class="tab-panel">
-    <div class="grid grid-1">
-      <div class="card">
-        <h2>Demanda x Capacidade Efetiva x Alocado — AEM (Mecânica)</h2>
-        <canvas id="chartCapAEM"></canvas>
-      </div>
+    <div class="subpag-nav">
+      <button data-dir="-1" title="Anterior">‹</button>
+      <span class="subpag-ind"></span>
+      <button data-dir="1" title="Próxima">›</button>
     </div>
-    <div class="grid grid-1">
+
+    <div class="page-grid active cols-1 rows-2">
       <div class="card">
-        <h2>Demanda x Capacidade Efetiva x Alocado — AEE (Eletroeletrônica)</h2>
-        <canvas id="chartCapAEE"></canvas>
+        <div class="card-hd">
+          <div class="card-title">⚙️ Demanda x Capacidade x Alocado — AEM</div>
+          <span class="card-badge">mecânica · horas por semana</span>
+        </div>
+        <div class="card-body"><canvas id="chartCapAEM"></canvas></div>
       </div>
-    </div>
-    <div class="grid grid-1">
       <div class="card">
-        <h2>Demanda x Capacidade Efetiva x Alocado — AVL (Validação)</h2>
-        <canvas id="chartCapAVL"></canvas>
+        <div class="card-hd">
+          <div class="card-title">⚡ Demanda x Capacidade x Alocado — AEE</div>
+          <span class="card-badge">eletroeletrônica · horas por semana</span>
+        </div>
+        <div class="card-body"><canvas id="chartCapAEE"></canvas></div>
       </div>
     </div>
 
-    <div class="grid grid-1">
+    <div class="page-grid cols-1 rows-2">
       <div class="card">
-        <h2>Cronograma de Projetos — AEM</h2>
-        <div id="ganttAEM" class="gantt-container"></div>
+        <div class="card-hd">
+          <div class="card-title">🔬 Demanda x Capacidade x Alocado — AVL</div>
+          <span class="card-badge">validação · horas por semana</span>
+        </div>
+        <div class="card-body"><canvas id="chartCapAVL"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">📋 Cronograma de Projetos — AEM</div>
+          <span class="card-badge">mecânica</span>
+        </div>
+        <div class="card-body scroll"><div id="ganttAEM" class="gantt-container"></div></div>
       </div>
     </div>
-    <div class="grid grid-1">
+
+    <div class="page-grid cols-1 rows-2">
       <div class="card">
-        <h2>Cronograma de Projetos — AEE</h2>
-        <div id="ganttAEE" class="gantt-container"></div>
+        <div class="card-hd">
+          <div class="card-title">📋 Cronograma de Projetos — AEE</div>
+          <span class="card-badge">eletroeletrônica</span>
+        </div>
+        <div class="card-body scroll"><div id="ganttAEE" class="gantt-container"></div></div>
       </div>
-    </div>
-    <div class="grid grid-1">
       <div class="card">
-        <h2>Cronograma de Projetos — AVL</h2>
-        <div id="ganttAVL" class="gantt-container"></div>
+        <div class="card-hd">
+          <div class="card-title">📋 Cronograma de Projetos — AVL</div>
+          <span class="card-badge">validação</span>
+        </div>
+        <div class="card-body scroll"><div id="ganttAVL" class="gantt-container"></div></div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== PÁGINA 3 — QUALIDADE & MELHORIAS (novo) ===================== -->
+  <!-- ===================== PÁGINA 3 — QUALIDADE & MELHORIAS ===================== -->
   <section id="tab-melhorias" class="tab-panel">
-    <p class="section-note">
-      Indicadores novos, propostos além da réplica do painel original — ver
-      <code>_analise_dashboard/ESPECIFICACAO_DASHBOARD.md</code> para o contexto completo de cada um.
-    </p>
+    <div class="subpag-nav">
+      <button data-dir="-1" title="Anterior">‹</button>
+      <span class="subpag-ind"></span>
+      <button data-dir="1" title="Próxima">›</button>
+    </div>
 
-    <div class="grid grid-2">
+    <div class="page-grid active cols-2 rows-2">
       <div class="card">
-        <h2>Qualidade do Dado de Tempo Gasto</h2>
-        <canvas id="chartDataQualityTempo"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🧪 Qualidade do Dado de Tempo Gasto</div>
+          <span class="card-badge">apontado x rateado</span>
+        </div>
+        <div class="card-body"><canvas id="chartDataQualityTempo"></canvas></div>
       </div>
       <div class="card">
-        <h2>Qualidade da Classificação de Tipo de Tarefa</h2>
-        <canvas id="chartDataQualityTipo"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🏷️ Qualidade da Classificação de Tipo</div>
+          <span class="card-badge">origem da classificação</span>
+        </div>
+        <div class="card-body"><canvas id="chartDataQualityTipo"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">⏳ Cycle Time Médio por Status</div>
+          <span class="card-badge">horas</span>
+        </div>
+        <div class="card-body"><canvas id="chartCycleTime"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">📉 Throughput Semanal + Forecast</div>
+          <span class="card-badge">concluídas por semana</span>
+        </div>
+        <div class="card-body"><canvas id="chartThroughput"></canvas></div>
       </div>
     </div>
 
-    <div class="grid grid-2">
+    <div class="page-grid cols-1 rows-1">
       <div class="card">
-        <h2>Cycle Time Médio por Status (horas)</h2>
-        <canvas id="chartCycleTime"></canvas>
-      </div>
-      <div class="card">
-        <h2>Throughput Semanal (concluídas) + Forecast</h2>
-        <canvas id="chartThroughput"></canvas>
-      </div>
-    </div>
-
-    <div class="grid grid-1">
-      <div class="card">
-        <h2>Estabilidade de Planejamento por Responsável (nº de remarcações)</h2>
-        <canvas id="chartEstabilidade"></canvas>
+        <div class="card-hd">
+          <div class="card-title">🔀 Estabilidade de Planejamento por Responsável</div>
+          <span class="card-badge">nº de remarcações de data</span>
+        </div>
+        <div class="card-body"><canvas id="chartEstabilidade"></canvas></div>
       </div>
     </div>
   </section>

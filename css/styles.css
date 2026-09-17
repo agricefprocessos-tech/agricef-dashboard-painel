@@ -1,145 +1,136 @@
+/* Design system alinhado ao "Dashboard de Produção 2.0" da AGRICEF
+   (http://192.168.10.70:3100/dashboard/) — mesmos tokens, tipografia e
+   componentes, para os dois painéis lerem como um sistema só. */
 :root {
-  --bg: #f4f6f9;
-  --card-bg: #ffffff;
-  --text: #1a1f2b;
-  --text-muted: #667085;
-  --border: #e4e7ec;
-  --accent: #2f6fed;
-  --accent-soft: #eaf0fe;
-  --ok: #12b76a;
-  --warn: #f79009;
-  --bad: #f04438;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --bg:#0d1117; --surface:#161b22; --surface2:#1c2230; --border:#2a3245;
+  --accent:#f0b429; --accent2:#38bdf8; --accent3:#4ade80; --danger:#f87171;
+  --warn:#fb923c; --purple:#a78bfa;
+  --text:#e6edf3; --text2:#8b949e; --text3:#58677a;
 }
 
-* { box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+/* Layout de tela cheia: a coluna flex faz cada subpágina ocupar exatamente a
+   altura que sobra, então nenhuma página precisa de rolagem vertical. */
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;display:flex;flex-direction:column;overflow:hidden;}
 
-body {
-  margin: 0;
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
+/* ── Header ─────────────────────────────────────────────── */
+header.topbar{background:linear-gradient(135deg,#0d1117,#1a2235);border-bottom:2px solid var(--accent);padding:7px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;flex-wrap:wrap;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo img{height:28px;}
+.logo-text h1{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:1px;text-transform:uppercase;line-height:1.1;}
+.logo-text p{font-size:10px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 28px;
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border);
-}
-.topbar-title h1 { margin: 0; font-size: 20px; }
-.subtitle { color: var(--text-muted); font-size: 13px; }
+.live-badge{background:#1a2a1a;border:1px solid var(--accent3);color:var(--accent3);padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.live-dot{width:6px;height:6px;background:var(--accent3);border-radius:50%;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.live-badge.mock{background:#2a2410;border-color:var(--accent);color:var(--accent);}
+.live-badge.mock .live-dot{background:var(--accent);}
+.live-badge.local{background:#0f2430;border-color:var(--accent2);color:var(--accent2);}
+.live-badge.local .live-dot{background:var(--accent2);}
 
-.topbar-actions { display: flex; align-items: center; gap: 12px; }
-.badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-.badge.mock { background: #fef0c7; color: #b54708; }
-.badge.local { background: #e0f2fe; color: #0369a1; }
-.badge.jira { background: #d1fadf; color: #05603a; }
-.last-updated { font-size: 12px; color: var(--text-muted); }
-.btn {
-  border: 1px solid var(--border);
-  background: var(--accent);
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.btn:hover { opacity: 0.9; }
-.btn:disabled { opacity: 0.6; cursor: wait; }
+.last-updated{font-size:11px;color:var(--text3);white-space:nowrap;}
+.refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s;flex-shrink:0;}
+.refresh-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+.refresh-btn:disabled{opacity:.5;cursor:wait;}
+.refresh-btn.spinning{animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.tabs {
-  display: flex;
-  gap: 4px;
-  padding: 0 28px;
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border);
-}
-.tab-btn {
-  border: none;
-  background: none;
-  padding: 12px 16px;
-  font-size: 14px;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+/* ── Navegação de páginas ───────────────────────────────── */
+.page-nav{display:flex;gap:8px;flex-wrap:wrap;background:var(--surface);border-bottom:1px solid var(--border);padding:7px 24px;flex-shrink:0;}
+.page-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 15px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;transition:background .15s,border-color .15s,color .15s;}
+.page-tab.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.page-tab:hover:not(.active){border-color:var(--accent);color:var(--accent);}
 
-main { padding: 24px 28px 60px; max-width: 1400px; margin: 0 auto; }
+main{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 20px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:flex;flex-direction:column;flex:1;min-height:0;}
 
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+/* ── Sub-paginação ──────────────────────────────────────── */
+.subpag-nav{display:flex;align-items:center;justify-content:center;gap:14px;padding:2px 0 9px;flex-shrink:0;}
+.subpag-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:50%;font-size:15px;line-height:1;cursor:pointer;transition:border-color .15s,color .15s;}
+.subpag-nav button:hover{border-color:var(--accent);color:var(--accent);}
+.subpag-nav .subpag-ind{font-size:12px;color:var(--text2);font-weight:600;min-width:34px;text-align:center;}
 
-.section-note {
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-.section-note code {
-  background: var(--accent-soft);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
+/* ── Grid paginado ──────────────────────────────────────── */
+.page-grid{display:none;gap:12px;}
+.page-grid.active{display:grid;flex:1;min-height:0;}
+.cols-1{grid-template-columns:1fr;}
+.cols-2{grid-template-columns:1fr 1fr;}
+.rows-1{grid-template-rows:1fr;}
+.rows-2{grid-template-rows:1fr 1fr;}
 
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.kpi-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 18px;
-  box-shadow: var(--shadow);
-}
-.kpi-card .kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
-.kpi-card .kpi-value { font-size: 26px; font-weight: 700; margin-top: 4px; }
-.kpi-card .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+/* ── KPIs ───────────────────────────────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px;margin-bottom:10px;flex-shrink:0;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;min-width:0;}
+.kpi:hover{transform:translateY(-2px);border-color:var(--kc,var(--accent));}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--accent));}
+.kpi-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:800;color:var(--kc,var(--accent));line-height:1;}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi-ico{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:24px;opacity:.07;}
 
-.grid {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.grid-1 { grid-template-columns: 1fr; }
-.grid-2 { grid-template-columns: 1fr 1fr; }
-@media (max-width: 900px) {
-  .grid-2 { grid-template-columns: 1fr; }
-}
+/* ── Cards ──────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+.card-hd{padding:9px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;row-gap:4px;flex-shrink:0;}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:13.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:7px;}
+.card-badge{font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:10px;color:var(--text2);font-weight:400;white-space:nowrap;}
+/* Sem altura fixa no canvas: o Chart.js dimensiona sozinho para preencher este
+   container, que já tem altura definida pelo grid da subpágina. */
+.card-body{flex:1;min-height:0;padding:10px 14px;}
+.card-body.scroll{overflow:auto;}
 
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-  box-shadow: var(--shadow);
-  min-height: 280px;
+#chartWordCloud{display:block;max-width:100%;max-height:100%;margin:0 auto;}
+
+.gantt-container{overflow-x:auto;}
+
+/* frappe-gantt: o tema escuro vem do próprio pacote (html[data-theme=dark]);
+   aqui só realinhamos as variáveis dele com a paleta AGRICEF. */
+.gantt-container{
+  --g-row-color:var(--surface);
+  --g-header-background:var(--surface);
+  --g-border-color:var(--border);
+  --g-row-border-color:var(--border);
+  --g-tick-color:var(--border);
+  --g-tick-color-thick:var(--border);
+  --g-weekend-highlight-color:var(--surface2);
+  --g-weekend-label-color:var(--border);
+  --g-bar-color:var(--accent2);
+  --g-bar-border:var(--accent2);
+  --g-progress-color:var(--accent);
+  --g-today-highlight:var(--accent);
+  --g-text-muted:var(--text2);
+  --g-arrow-color:var(--text3);
 }
-.card h2 { font-size: 14px; margin: 0 0 12px; color: var(--text); }
-.card canvas { max-height: 320px; }
+.gantt-container .gantt text{font-family:'Barlow',sans-serif;}
+/* Rótulo dentro da barra fica sobre o ciano claro; fora dela, sobre o fundo escuro. */
+.gantt-container .gantt .bar-label{fill:#0d1117;font-weight:600;}
+.gantt-container .gantt .bar-label.big{fill:var(--text);}
 
-.gantt-container { overflow-x: auto; }
+.empty{padding:24px;text-align:center;color:var(--text3);font-size:13px;}
 
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--text-muted);
-  z-index: 50;
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--surface2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+
+/* ── Overlay de carregamento ────────────────────────────── */
+.loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.88);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .3s;}
+.loading-overlay.hidden{opacity:0;pointer-events:none;}
+.loading-spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--accent3);border-radius:50%;animation:spin .8s linear infinite;}
+.loading-text{color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;}
+.loading-sub{color:var(--text2);font-size:12px;}
+
+/* ── Telas estreitas / baixas ───────────────────────────────
+   Abaixo disso o grid de tela cheia espremeria os gráficos a ponto de ficarem
+   ilegíveis, então voltamos ao empilhamento com rolagem normal. */
+@media (max-width:900px), (max-height:560px){
+  body{overflow:auto;display:block;height:auto;}
+  main{display:block;}
+  .tab-panel.active{display:block;}
+  .page-grid.active{grid-template-columns:1fr;grid-template-rows:none;}
+  .card{height:auto;}
+  .card-body{height:280px;}
+  .card-body.scroll{height:320px;}
 }
