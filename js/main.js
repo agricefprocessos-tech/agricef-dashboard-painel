@@ -1,7 +1,7 @@
 import { fetchStatus, fetchDashboard, refreshDashboard } from "./api.js";
 import * as charts from "./charts.js";
 import { renderGantt } from "./gantt.js";
-import { renderWordCloud } from "./wordcloud.js";
+import { renderWordCloud, renderWordCloudIfPending } from "./wordcloud.js";
 import { loadCadastro, setupCadastroTabs } from "./cadastro.js";
 
 let cadastroCarregado = false;
@@ -13,7 +13,8 @@ function setupTabs() {
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-      charts.resizeAll();
+      charts.renderVisible();
+      renderWordCloudIfPending();
 
       // O cadastro é uma chamada separada e mais lenta — só busca quando a aba
       // é aberta de fato.
@@ -47,7 +48,8 @@ function setupSubPagination() {
       const target = (index + pages.length) % pages.length;
       pages.forEach((p, i) => p.classList.toggle("active", i === target));
       indicator.textContent = `${target + 1}/${pages.length}`;
-      charts.resizeAll();
+      charts.renderVisible();
+      renderWordCloudIfPending();
     };
     nav.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => showPage(currentPageIndex(pages) + Number(btn.dataset.dir)));

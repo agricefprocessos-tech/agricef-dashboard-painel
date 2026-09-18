@@ -58,7 +58,7 @@
       <button data-dir="1" title="Próxima">›</button>
     </div>
 
-    <div class="page-grid active cols-2 rows-2">
+    <div class="page-grid active cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">🎯 Status de Entregas / Período</div>
@@ -73,6 +73,9 @@
         </div>
         <div class="card-body"><canvas id="chartOrigemTempo"></canvas></div>
       </div>
+    </div>
+
+    <div class="page-grid cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">📅 Tarefas Concluídas por Mês</div>
@@ -89,7 +92,7 @@
       </div>
     </div>
 
-    <div class="page-grid cols-2 rows-2">
+    <div class="page-grid cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">📈 Estimativa x Tempo Gasto</div>
@@ -100,10 +103,13 @@
       <div class="card">
         <div class="card-hd">
           <div class="card-title">🔧 Tempo Gasto por Tipo de Tarefa</div>
-          <span class="card-badge">horas totais</span>
+          <span class="card-badge">top 12 · horas totais</span>
         </div>
         <div class="card-body"><canvas id="chartTempoPorTipo"></canvas></div>
       </div>
+    </div>
+
+    <div class="page-grid cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">⚖️ Criadas x Entregues</div>
@@ -120,21 +126,7 @@
       </div>
     </div>
 
-    <div class="page-grid cols-2 rows-2">
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-title">📦 Lead Time por Tipo de Tarefa</div>
-          <span class="card-badge">dias · min / Q1 / mediana / Q3 / max</span>
-        </div>
-        <div class="card-body"><canvas id="chartLeadTimeBoxplot"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-hd">
-          <div class="card-title">☁️ Nuvem de Palavras</div>
-          <span class="card-badge">resumos das tarefas</span>
-        </div>
-        <div class="card-body"><canvas id="chartWordCloud" width="900" height="360"></canvas></div>
-      </div>
+    <div class="page-grid cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">🔄 WIP por Mês</div>
@@ -145,9 +137,26 @@
       <div class="card">
         <div class="card-hd">
           <div class="card-title">✍️ Tarefas por Relator</div>
-          <span class="card-badge">quem abre demanda</span>
+          <span class="card-badge">top 12 · quem abre demanda</span>
         </div>
         <div class="card-body"><canvas id="chartPorRelator"></canvas></div>
+      </div>
+    </div>
+
+    <div class="page-grid cols-2 rows-1">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">📦 Lead Time por Tipo de Tarefa</div>
+          <span class="card-badge">top 12 · dias (min / Q1 / mediana / Q3 / max)</span>
+        </div>
+        <div class="card-body"><canvas id="chartLeadTimeBoxplot"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">☁️ Nuvem de Palavras</div>
+          <span class="card-badge">resumos das tarefas</span>
+        </div>
+        <div class="card-body"><canvas id="chartWordCloud"></canvas></div>
       </div>
     </div>
   </section>
@@ -220,7 +229,7 @@
       <button data-dir="1" title="Próxima">›</button>
     </div>
 
-    <div class="page-grid active cols-2 rows-2">
+    <div class="page-grid active cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">🧪 Qualidade do Dado de Tempo Gasto</div>
@@ -235,10 +244,13 @@
         </div>
         <div class="card-body"><canvas id="chartDataQualityTipo"></canvas></div>
       </div>
+    </div>
+
+    <div class="page-grid cols-2 rows-1">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">⏳ Cycle Time Médio por Status</div>
-          <span class="card-badge">horas</span>
+          <span class="card-badge">top 12 · horas</span>
         </div>
         <div class="card-body"><canvas id="chartCycleTime"></canvas></div>
       </div>
@@ -255,7 +267,7 @@
       <div class="card">
         <div class="card-hd">
           <div class="card-title">🔀 Estabilidade de Planejamento por Responsável</div>
-          <span class="card-badge">nº de remarcações de data</span>
+          <span class="card-badge">top 12 · nº de remarcações de data</span>
         </div>
         <div class="card-body"><canvas id="chartEstabilidade"></canvas></div>
       </div>

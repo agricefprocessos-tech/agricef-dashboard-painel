@@ -32,10 +32,23 @@ const STATUS_COLORS = {
 };
 
 const instances = new Map();
+// Gráficos cuja subpágina ainda está oculta. Criar um Chart.js dentro de um
+// container display:none produz um gráfico de tamanho 0 que ele NÃO recupera
+// depois — nem com resize(), nem passando largura/altura explícitas (testado).
+// Então a configuração fica aqui e o gráfico só nasce quando a página aparece.
+const pendentes = new Map();
 
 function renderChart(canvasId, config) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
+
+  const box = canvas.parentElement;
+  if (!box || !box.clientWidth || !box.clientHeight) {
+    pendentes.set(canvasId, config);
+    return null;
+  }
+  pendentes.delete(canvasId);
+
   if (instances.has(canvasId)) instances.get(canvasId).destroy();
   // Chart.js muta o objeto `options` em memória (injeta escalas resolvidas etc).
   // Como vários gráficos compartilham o mesmo `baseOptions` por referência, sem
@@ -66,18 +79,41 @@ const baseOptions = {
   plugins: { legend: { labels: { boxWidth: 12, font: { size: 11 } } } },
 };
 
+// Rótulo girado consome altura, e em layout de tela cheia a altura é justamente
+// o que falta: numa série de 26 meses o eixo girado comia 70 dos 100px do card.
+// Melhor pular rótulos do que girá-los.
+const denseTicks = { maxRotation: 0, autoSkip: true, autoSkipPadding: 10 };
+
 // Só para gráficos com eixo — deixar as escalas fora do baseOptions evita que
 // pizza/rosca herdem grid que não deveriam ter.
 const axisOptions = {
   ...baseOptions,
-  scales: { x: { grid: { color: GRID } }, y: { grid: { color: GRID } } },
+  scales: { x: { grid: { color: GRID }, ticks: denseTicks }, y: { grid: { color: GRID } } },
+};
+
+// Barra horizontal: quem tem muitos itens é o eixo Y (categorias). Pular
+// categoria esconderia informação, então o corte é feito nos dados (topN).
+const horizontalOptions = {
+  ...baseOptions,
+  indexAxis: "y",
+  scales: {
+    x: { grid: { color: GRID }, ticks: { maxRotation: 0 } },
+    y: { grid: { color: GRID }, ticks: { autoSkip: false, font: { size: 10 } } },
+  },
 };
 
 const donutOptions = {
   ...baseOptions,
   cutout: "55%",
-  plugins: { legend: { position: "right", labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+  plugins: { legend: { position: "right", labels: { boxWidth: 11, padding: 8, font: { size: 10 } } } },
 };
+
+// Gráfico de categoria com 30-70 itens é ilegível em qualquer tamanho — mostrar
+// os maiores diz mais do que espremer todos.
+const TOP_N = 12;
+function topN(rows, valueOf, n) {
+  return rows.slice().sort((a, b) => (valueOf(b) || 0) - (valueOf(a) || 0)).slice(0, n || TOP_N);
+}
 
 const KPI_STYLE = [
   { color: COLORS.amber, icon: "📋" },
@@ -186,14 +222,14 @@ export function renderEstimativaXGasto(indicators) {
 }
 
 export function renderTempoPorTipo(indicators) {
-  const rows = indicators.tempoPorTipoTarefa;
+  const rows = topN(indicators.tempoPorTipoTarefa, (r) => r.tempo_gasto_corrigido);
   renderChart("chartTempoPorTipo", {
     type: "bar",
     data: {
       labels: rows.map((r) => r.tipo_de_tarefa),
       datasets: [{ label: "Horas", data: rows.map((r) => round1(r.tempo_gasto_corrigido)), backgroundColor: rows.map((_, i) => PALETTE[i % PALETTE.length]), borderRadius: 4 }],
     },
-    options: { ...axisOptions, indexAxis: "y", plugins: { legend: { display: false } } },
+    options: { ...horizontalOptions, plugins: { legend: { display: false } } },
   });
 }
 
@@ -201,7 +237,7 @@ export function renderTempoPorTipo(indicators) {
 // uma barra fina para o range min-max (whiskers) e uma barra grossa para o IQR (q1-q3),
 // mais um marcador de mediana.
 export function renderLeadTimeBoxplot(indicators) {
-  const rows = indicators.leadTimePorTipo.filter((r) => r.stats);
+  const rows = topN(indicators.leadTimePorTipo.filter((r) => r.stats), (r) => r.stats.median);
   const labels = rows.map((r) => r.tipo_de_tarefa);
   renderChart("chartLeadTimeBoxplot", {
     type: "bar",
@@ -230,11 +266,10 @@ export function renderLeadTimeBoxplot(indicators) {
       ],
     },
     options: {
-      ...axisOptions,
-      indexAxis: "y",
+      ...horizontalOptions,
       scales: {
-        x: { grid: { color: GRID }, title: { display: true, text: "dias" } },
-        y: { grid: { color: GRID } },
+        x: { grid: { color: GRID }, ticks: { maxRotation: 0 }, title: { display: true, text: "dias" } },
+        y: { grid: { color: GRID }, ticks: { autoSkip: false, font: { size: 10 } } },
       },
     },
   });
@@ -285,11 +320,11 @@ export function renderWip(indicators) {
 }
 
 export function renderPorRelator(indicators) {
-  const rows = indicators.porRelator;
+  const rows = topN(indicators.porRelator, (r) => r.total);
   renderChart("chartPorRelator", {
     type: "bar",
     data: { labels: rows.map((r) => r.relator), datasets: [{ label: "Tarefas", data: rows.map((r) => r.total), backgroundColor: rows.map((_, i) => PALETTE[i % PALETTE.length]), borderRadius: 4 }] },
-    options: { ...axisOptions, indexAxis: "y", plugins: { legend: { display: false } } },
+    options: { ...horizontalOptions, plugins: { legend: { display: false } } },
   });
 }
 
@@ -351,11 +386,11 @@ export function renderDataQualityTipo(indicators) {
 }
 
 export function renderCycleTime(indicators) {
-  const rows = indicators.melhorias.cycleTimePorStatus;
+  const rows = topN(indicators.melhorias.cycleTimePorStatus, (r) => r.media_horas);
   renderChart("chartCycleTime", {
     type: "bar",
     data: { labels: rows.map((r) => r.status), datasets: [{ label: "Média (h)", data: rows.map((r) => round1(r.media_horas)), backgroundColor: rows.map((_, i) => PALETTE[i % PALETTE.length]), borderRadius: 4 }] },
-    options: { ...axisOptions, indexAxis: "y", plugins: { legend: { display: false } } },
+    options: { ...horizontalOptions, plugins: { legend: { display: false } } },
   });
 }
 
@@ -376,7 +411,7 @@ export function renderThroughput(indicators) {
 }
 
 export function renderEstabilidade(indicators) {
-  const rows = indicators.melhorias.estabilidadePorResponsavel;
+  const rows = topN(indicators.melhorias.estabilidadePorResponsavel, (r) => r.soma_startdate_changes + r.soma_duedate_changes);
   renderChart("chartEstabilidade", {
     type: "bar",
     data: {
@@ -390,10 +425,16 @@ export function renderEstabilidade(indicators) {
   });
 }
 
-// Gráficos criados dentro de uma subpágina oculta nascem com tamanho 0 — ao
-// exibir a página é preciso remedir o container.
-export function resizeAll() {
-  instances.forEach((chart) => chart.resize());
+// Chamar ao exibir uma subpágina/aba: cria os gráficos que estavam esperando
+// container visível e remede os que já existiam.
+export function renderVisible() {
+  Array.from(pendentes.keys()).forEach((canvasId) => {
+    renderChart(canvasId, pendentes.get(canvasId));
+  });
+  instances.forEach((chart) => {
+    const box = chart.canvas.parentElement;
+    if (box && box.clientWidth && box.clientHeight) chart.resize();
+  });
 }
 
 function palette(n) {
