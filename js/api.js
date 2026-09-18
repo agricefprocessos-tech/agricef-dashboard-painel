@@ -61,3 +61,22 @@ export async function fetchDashboard() {
 export async function refreshDashboard() {
   return withRetry("refresh");
 }
+
+export async function fetchCadastro() {
+  return withRetry("cadastro");
+}
+
+// Escrita vai por POST. Content-Type text/plain mantém a requisição "simples"
+// no CORS — com application/json o browser dispara preflight OPTIONS, que o
+// Apps Script não responde.
+export async function writeCadastro(action, payload) {
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(Object.assign({ action }, payload)),
+  });
+  if (!res.ok) throw new Error(`Falha ao gravar (HTTP ${res.status})`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}

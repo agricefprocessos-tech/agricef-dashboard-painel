@@ -41,10 +41,23 @@ function renderChart(canvasId, config) {
   // Como vários gráficos compartilham o mesmo `baseOptions` por referência, sem
   // clonar aqui um gráfico "bar" contaminaria o próximo gráfico "pie" com eixos
   // que ele não deveria ter. Clonar isola cada instância.
-  const isolatedConfig = { ...config, options: structuredClone(config.options || {}) };
+  const isolatedConfig = { ...config, options: cloneOptions(config.options || {}) };
   const chart = new Chart(canvas, isolatedConfig);
   instances.set(canvasId, chart);
   return chart;
+}
+
+// structuredClone não serve aqui: as options podem conter callbacks (tooltip),
+// e função não é clonável. Funções passam por referência — o Chart.js não as
+// altera, só os objetos de configuração ao redor.
+function cloneOptions(value) {
+  if (Array.isArray(value)) return value.map(cloneOptions);
+  if (value && typeof value === "object") {
+    const out = {};
+    Object.keys(value).forEach((key) => { out[key] = cloneOptions(value[key]); });
+    return out;
+  }
+  return value;
 }
 
 const baseOptions = {
@@ -280,19 +293,32 @@ export function renderPorRelator(indicators) {
   });
 }
 
-export function renderCapacity(canvasId, weeks) {
-  const disc = canvasId.replace("chartCap", "").toLowerCase();
+export function renderCapacity(canvasId, capacity) {
+  const disc = canvasId.replace("chartCap", "");
+  const weeks = capacity.semanas || [];
   renderChart(canvasId, {
     type: "bar",
     data: {
       labels: weeks.map((w) => `S${w.semana}/${w.ano}`),
       datasets: [
-        { label: "Demandado", data: weeks.map((w) => w[`hd_${disc}`]), backgroundColor: COLORS.gray, borderRadius: 3 },
-        { label: "Capacidade Efetiva", data: weeks.map((w) => w[`hd_${disc}_2`]), backgroundColor: COLORS.blue, borderRadius: 3 },
-        { label: "Alocado", data: weeks.map((w) => w[`ha_${disc}`]), backgroundColor: COLORS.amber, borderRadius: 3 },
+        { label: "Capacidade Efetiva (cadastro)", data: weeks.map((w) => w[`cap_${disc}`]), backgroundColor: COLORS.blue, borderRadius: 3 },
+        { label: "Alocado em projetos", data: weeks.map((w) => w[`alocado_${disc}`]), backgroundColor: COLORS.amber, borderRadius: 3 },
       ],
     },
-    options: axisOptions,
+    options: {
+      ...axisOptions,
+      plugins: {
+        legend: { labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            afterBody: (items) => {
+              const w = weeks[items[0].dataIndex];
+              return w ? `${w[`pessoas_${disc}`]} pessoa(s) disponível(is) · ${w.data_inicio} a ${w.data_fim}` : "";
+            },
+          },
+        },
+      },
+    },
   });
 }
 

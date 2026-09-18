@@ -43,6 +43,7 @@
   <button class="page-tab active" data-tab="visao-geral">📊 Visão Geral</button>
   <button class="page-tab" data-tab="capacidade">🏭 Capacidade Produtiva</button>
   <button class="page-tab" data-tab="melhorias">✅ Qualidade &amp; Melhorias</button>
+  <button class="page-tab" data-tab="cadastro">🗂️ Cadastro de Pessoas</button>
 </nav>
 
 <main>
@@ -162,15 +163,15 @@
     <div class="page-grid active cols-1 rows-2">
       <div class="card">
         <div class="card-hd">
-          <div class="card-title">⚙️ Demanda x Capacidade x Alocado — AEM</div>
-          <span class="card-badge">mecânica · horas por semana</span>
+          <div class="card-title">⚙️ Capacidade x Alocado — AEM</div>
+          <span class="card-badge">mecânica · horas/semana do cadastro</span>
         </div>
         <div class="card-body"><canvas id="chartCapAEM"></canvas></div>
       </div>
       <div class="card">
         <div class="card-hd">
-          <div class="card-title">⚡ Demanda x Capacidade x Alocado — AEE</div>
-          <span class="card-badge">eletroeletrônica · horas por semana</span>
+          <div class="card-title">⚡ Capacidade x Alocado — AEE</div>
+          <span class="card-badge">eletroeletrônica · horas/semana do cadastro</span>
         </div>
         <div class="card-body"><canvas id="chartCapAEE"></canvas></div>
       </div>
@@ -179,8 +180,8 @@
     <div class="page-grid cols-1 rows-2">
       <div class="card">
         <div class="card-hd">
-          <div class="card-title">🔬 Demanda x Capacidade x Alocado — AVL</div>
-          <span class="card-badge">validação · horas por semana</span>
+          <div class="card-title">🔬 Capacidade x Alocado — AVL</div>
+          <span class="card-badge">validação · horas/semana do cadastro</span>
         </div>
         <div class="card-body"><canvas id="chartCapAVL"></canvas></div>
       </div>
@@ -260,12 +261,32 @@
       </div>
     </div>
   </section>
+
+  <!-- ===================== PÁGINA 4 — CADASTRO DE PESSOAS ===================== -->
+  <section id="tab-cadastro" class="tab-panel">
+    <div class="kpi-row" id="cadastroKpis"></div>
+
+    <div class="page-grid active cols-1 rows-1">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">🗂️ Cadastro de Pessoas</div>
+          <span class="card-badge">alimenta o cálculo de capacidade</span>
+        </div>
+        <div class="cad-tabs" id="cadastroSubTabs"></div>
+        <div class="cad-saving" id="cadastroSaving">Gravando na planilha…</div>
+        <div class="card-body scroll" id="cadastroBody">
+          <p class="empty">Carregando cadastro…</p>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <script type="module" src="js/api.js"></script>
 <script type="module" src="js/charts.js"></script>
 <script type="module" src="js/gantt.js"></script>
 <script type="module" src="js/wordcloud.js"></script>
+<script type="module" src="js/cadastro.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

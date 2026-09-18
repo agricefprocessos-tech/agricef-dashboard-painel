@@ -2,6 +2,9 @@ import { fetchStatus, fetchDashboard, refreshDashboard } from "./api.js";
 import * as charts from "./charts.js";
 import { renderGantt } from "./gantt.js";
 import { renderWordCloud } from "./wordcloud.js";
+import { loadCadastro, setupCadastroTabs } from "./cadastro.js";
+
+let cadastroCarregado = false;
 
 function setupTabs() {
   document.querySelectorAll(".page-tab").forEach((btn) => {
@@ -11,6 +14,17 @@ function setupTabs() {
       btn.classList.add("active");
       document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
       charts.resizeAll();
+
+      // O cadastro é uma chamada separada e mais lenta — só busca quando a aba
+      // é aberta de fato.
+      if (btn.dataset.tab === "cadastro" && !cadastroCarregado) {
+        cadastroCarregado = true;
+        loadCadastro().catch((err) => {
+          cadastroCarregado = false;
+          document.getElementById("cadastroBody").innerHTML =
+            `<p class="empty">Erro ao carregar o cadastro: ${err.message}</p>`;
+        });
+      }
     });
   });
 }
@@ -80,9 +94,9 @@ function renderAll(payload) {
   charts.renderPorRelator(indicators);
   renderWordCloud("chartWordCloud", indicators.wordCloud);
 
-  charts.renderCapacity("chartCapAEM", capacity.demandaXCapacidade);
-  charts.renderCapacity("chartCapAEE", capacity.demandaXCapacidade);
-  charts.renderCapacity("chartCapAVL", capacity.demandaXCapacidade);
+  charts.renderCapacity("chartCapAEM", capacity);
+  charts.renderCapacity("chartCapAEE", capacity);
+  charts.renderCapacity("chartCapAVL", capacity);
   renderGantt("ganttAEM", capacity.gantt.AEM);
   renderGantt("ganttAEE", capacity.gantt.AEE);
   renderGantt("ganttAVL", capacity.gantt.AVL);
@@ -117,6 +131,7 @@ const POLL_INTERVAL_MS = 5 * 60 * 1000;
 async function init() {
   setupTabs();
   setupSubPagination();
+  setupCadastroTabs();
   document.getElementById("refreshBtn").addEventListener("click", () => load({ forceRefresh: true }));
   try {
     const status = await fetchStatus();
